@@ -205,6 +205,7 @@ matrix:
       stage: main-test
       before_install:
         - nvm install 14 # otherwise it runs by default on node 8
+        - f="./.travis/before-install-linux-javascript.sh"; ! [ -x "$f" ] || "$f"
     - os: linux
       dist: trusty
       jdk: openjdk8
@@ -217,7 +218,7 @@ before_install:
 script:
   - |
     cd runtime-testsuite;
-    travis_wait 40 ../.travis/run-tests-$TARGET.sh;
-    rc=$?;
-    cat target/surefire-reports/*.dumpstream || true;
+    travis_wait 40 ../.travis/run-tests-$TARGET.sh
+    rc=$?
+    cat target/surefire-reports/*.dumpstream || true
     exit $rc
