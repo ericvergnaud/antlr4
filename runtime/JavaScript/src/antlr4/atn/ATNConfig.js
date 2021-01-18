@@ -3,9 +3,8 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {DecisionState} = require('./ATNState');
-const {SemanticContext} = require('./SemanticContext');
-const {Hash} = require("../Utils");
+import {Hash} from "../Utils";
+import SemanticContext from "../context/SemanticContext";
 
 
 function checkParams(params, isCfg) {
@@ -29,9 +28,10 @@ function checkParams(params, isCfg) {
 	}
 }
 
-class ATNConfig {
+export default class ATNConfig {
     /**
      * @param {Object} params A tuple: (ATN state, predicted alt, syntactic, semantic context).
+     * @param {Object} config A tuple: (ATN state, predicted alt, syntactic, semantic context, flags ).
      * The syntactic context is a graph-structured stack node whose
      * path(s) to the root is the rule invocation(s)
      * chain used to arrive at the state.  The semantic context is
@@ -136,37 +136,3 @@ class ATNConfig {
 }
 
 
-class LexerATNConfig extends ATNConfig {
-    constructor(params, config) {
-        super(params, config);
-
-        // This is the backing field for {@link //getLexerActionExecutor}.
-        const lexerActionExecutor = params.lexerActionExecutor || null;
-        this.lexerActionExecutor = lexerActionExecutor || (config!==null ? config.lexerActionExecutor : null);
-        this.passedThroughNonGreedyDecision = config!==null ? this.checkNonGreedyDecision(config, this.state) : false;
-        this.hashCodeForConfigSet = LexerATNConfig.prototype.hashCode;
-        this.equalsForConfigSet = LexerATNConfig.prototype.equals;
-        return this;
-    }
-
-    updateHashCode(hash) {
-        hash.update(this.state.stateNumber, this.alt, this.context, this.semanticContext, this.passedThroughNonGreedyDecision, this.lexerActionExecutor);
-    }
-
-    equals(other) {
-        return this === other ||
-                (other instanceof LexerATNConfig &&
-                this.passedThroughNonGreedyDecision == other.passedThroughNonGreedyDecision &&
-                (this.lexerActionExecutor ? this.lexerActionExecutor.equals(other.lexerActionExecutor) : !other.lexerActionExecutor) &&
-                super.equals(other));
-    }
-
-    checkNonGreedyDecision(source, target) {
-        return source.passedThroughNonGreedyDecision ||
-            (target instanceof DecisionState) && target.nonGreedy;
-    }
-}
-
-
-module.exports.ATNConfig = ATNConfig;
-module.exports.LexerATNConfig = LexerATNConfig;

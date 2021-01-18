@@ -3,19 +3,17 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./../Token');
-const Lexer = require('./../Lexer');
-const ATN = require('./ATN');
-const ATNSimulator = require('./ATNSimulator');
-const {DFAState} = require('./../dfa/DFAState');
-const {OrderedATNConfigSet} = require('./ATNConfigSet');
-const {PredictionContext} = require('./../PredictionContext');
-const {SingletonPredictionContext} = require('./../PredictionContext');
-const {RuleStopState} = require('./ATNState');
-const {LexerATNConfig} = require('./ATNConfig');
-const {Transition} = require('./Transition');
-const LexerActionExecutor = require('./LexerActionExecutor');
-const {LexerNoViableAltException} = require('./../error/Errors');
+import Lexer from "./../Lexer";
+import ATN from "./ATN";
+import ATNSimulator from "./ATNSimulator";
+import OrderedATNConfigSet from "./OrderedATNConfigSet";
+import LexerATNConfig from "./LexerATNConfig";
+import SingletonPredictionContext from "../context/SingletonPredictionContext";
+import LexerNoViableAltException from "../error/LexerNoViableAltException";
+import LexerActionExecutor from "./LexerActionExecutor";
+import DFAState from "../dfa/DFAState";
+import RuleStopState from "../state/RuleStopState";
+
 
 function resetSimState(sim) {
 	sim.index = -1;
@@ -34,7 +32,7 @@ class SimState {
 	}
 }
 
-class LexerATNSimulator extends ATNSimulator {
+export default class LexerATNSimulator extends ATNSimulator {
 	/**
 	 * When we hit an accept state in either the DFA or the ATN, we
 	 * have to notify the character stream to start buffering characters
@@ -77,6 +75,7 @@ class LexerATNSimulator extends ATNSimulator {
 		this.prevAccept = new SimState();
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	copyState(simulator) {
 		this.column = simulator.column;
 		this.line = simulator.line;
@@ -85,7 +84,6 @@ class LexerATNSimulator extends ATNSimulator {
 	}
 
 	match(input, mode) {
-		this.match_calls += 1;
 		this.mode = mode;
 		const mark = input.mark();
 		try {
@@ -198,6 +196,7 @@ class LexerATNSimulator extends ATNSimulator {
 		return this.failOrAccept(this.prevAccept, input, s.configs, t);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * Get an existing target state for an edge in the DFA. If the target state
 	 * for the edge has not yet been computed or is otherwise not available,
@@ -287,8 +286,8 @@ class LexerATNSimulator extends ATNSimulator {
 				continue;
 			}
 			if (LexerATNSimulator.debug) {
-				console.log("testing %s at %s\n", this.getTokenName(t), cfg
-						.toString(this.recog, true));
+				const message = "testing " + this.getTokenName(t) + " at " + cfg.toString() + "\n";
+				console.log(message);
 			}
 			for (let j = 0; j < cfg.state.transitions.length; j++) {
 				const trans = cfg.state.transitions[j]; // for each transition
@@ -325,6 +324,7 @@ class LexerATNSimulator extends ATNSimulator {
 		   }
 	   }
 
+	// noinspection JSMethodCanBeStatic
 	getReachableTarget(trans, t) {
 		if (trans.matches(t, 0, Lexer.MAX_CHAR_VALUE)) {
 			return trans.target;
@@ -358,14 +358,17 @@ class LexerATNSimulator extends ATNSimulator {
 			currentAltReachedAcceptState, speculative, treatEofAsEpsilon) {
 		let cfg = null;
 		if (LexerATNSimulator.debug) {
-			console.log("closure(" + config.toString(this.recog, true) + ")");
+			console.log("closure(" + config.toString() + ")");
 		}
 		if (config.state instanceof RuleStopState) {
 			if (LexerATNSimulator.debug) {
 				if (this.recog !== null) {
-					console.log("closure at %s rule stop %s\n", this.recog.ruleNames[config.state.ruleIndex], config);
+					// noinspection JSUnresolvedVariable
+					const message = "closure at " + this.recog.ruleNames[config.state.ruleIndex] + " rule stop " + config.toString() + "\n";
+					console.log(message);
 				} else {
-					console.log("closure at rule stop %s\n", config);
+					const message = "closure at rule stop " + config.toString() + "\n";
+					console.log(message);
 				}
 			}
 			if (config.context === null || config.context.hasEmptyPath()) {
@@ -593,7 +596,9 @@ class LexerATNSimulator extends ATNSimulator {
 		}
 		if (firstConfigWithRuleStopState !== null) {
 			proposed.isAcceptState = true;
+			// noinspection JSUnresolvedVariable
 			proposed.lexerActionExecutor = firstConfigWithRuleStopState.lexerActionExecutor;
+			// noinspection JSUnresolvedVariable
 			proposed.prediction = this.atn.ruleToTokenType[firstConfigWithRuleStopState.state.ruleIndex];
 		}
 		const dfa = this.decisionToDFA[this.mode];
@@ -609,6 +614,7 @@ class LexerATNSimulator extends ATNSimulator {
 		return newState;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getDFA(mode) {
 		return this.decisionToDFA[mode];
 	}
@@ -630,6 +636,7 @@ class LexerATNSimulator extends ATNSimulator {
 		input.consume();
 	}
 
+	// noinspection JSMethodCanBeStatic
 	getTokenName(tt) {
 		if (tt === -1) {
 			return "EOF";
@@ -645,6 +652,3 @@ LexerATNSimulator.dfa_debug = false;
 LexerATNSimulator.MIN_DFA_EDGE = 0;
 LexerATNSimulator.MAX_DFA_EDGE = 127; // forces unicode to stay in ATN
 
-LexerATNSimulator.match_calls = 0;
-
-module.exports = LexerATNSimulator;

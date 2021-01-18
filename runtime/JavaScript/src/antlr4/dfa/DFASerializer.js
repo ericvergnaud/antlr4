@@ -6,7 +6,8 @@
 /**
  * A DFA walker that knows how to dump them to serialized strings.
  */
-class DFASerializer {
+export default class DFASerializer {
+
     constructor(dfa, literalNames, symbolicNames) {
         this.dfa = dfa;
         this.literalNames = literalNames || [];
@@ -18,7 +19,8 @@ class DFASerializer {
            return null;
        }
        let buf = "";
-       const states = this.dfa.sortedStates();
+       // noinspection JSUnresolvedFunction
+        const states = this.dfa.sortedStates();
        for(let i=0; i<states.length; i++) {
            const s = states[i];
            if(s.edges!==null) {
@@ -49,6 +51,7 @@ class DFASerializer {
         }
     }
 
+    // noinspection JSMethodCanBeStatic
     getStateString(s) {
         const baseStateStr = ( s.isAcceptState ? ":" : "") + "s" + s.stateNumber + ( s.requiresFullContext ? "^" : "");
         if(s.isAcceptState) {
@@ -63,15 +66,4 @@ class DFASerializer {
     }
 }
 
-class LexerDFASerializer extends DFASerializer {
-    constructor(dfa) {
-        super(dfa, null);
-    }
-
-    getEdgeLabel(i) {
-        return "'" + String.fromCharCode(i) + "'";
-    }
-}
-
-module.exports = { DFASerializer , LexerDFASerializer };
 

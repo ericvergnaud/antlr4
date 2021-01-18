@@ -3,13 +3,14 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-const {ParseTreeListener, TerminalNode, ErrorNode} = require('./tree/Tree');
-const Recognizer = require('./Recognizer');
-const {DefaultErrorStrategy} = require('./error/ErrorStrategy');
-const ATNDeserializer = require('./atn/ATNDeserializer');
-const ATNDeserializationOptions = require('./atn/ATNDeserializationOptions');
-const Lexer = require('./Lexer');
+import Token from "./Token";
+import Recognizer from "./Recognizer";
+import DefaultErrorStrategy from "./error/DefaultErrorStrategy";
+import ATNDeserializer from "./atn/ATNDeserializer";
+import ATNDeserializationOptions from "./atn/ATNDeserializationOptions";
+import ErrorNode from "./tree/ErrorNode";
+import TerminalNode from "./tree/TerminalNode";
+import ParseTreeListener from "./tree/ParseTreeListener";
 
 class TraceListener extends ParseTreeListener {
 	constructor(parser) {
@@ -18,19 +19,22 @@ class TraceListener extends ParseTreeListener {
 	}
 
 	enterEveryRule(ctx) {
+		// noinspection JSUnresolvedVariable
 		console.log("enter   " + this.parser.ruleNames[ctx.ruleIndex] + ", LT(1)=" + this.parser._input.LT(1).text);
 	}
 
 	visitTerminal(node) {
+		// noinspection JSUnresolvedVariable
 		console.log("consume " + node.symbol + " rule " + this.parser.ruleNames[this.parser._ctx.ruleIndex]);
 	}
 
 	exitEveryRule(ctx) {
+		// noinspection JSUnresolvedVariable
 		console.log("exit    " + this.parser.ruleNames[ctx.ruleIndex] + ", LT(1)=" + this.parser._input.LT(1).text);
 	}
 }
 
-class Parser extends Recognizer {
+export default class Parser extends Recognizer {
 	/**
 	 * this is all the parsing support code essentially; most of it is error
 	 * recovery stuff.
@@ -69,11 +73,13 @@ class Parser extends Recognizer {
 		 * events during the parse.
 		 */
 		this._parseListeners = null;
+		// noinspection JSUnusedGlobalSymbols
 		/**
 		 * The number of syntax errors reported during parsing. this value is
 		 * incremented each time {@link //notifyErrorListeners} is called.
 		 */
 		this._syntaxErrors = 0;
+		// noinspection JSUnresolvedFunction
 		this.setInputStream(input);
 	}
 
@@ -128,6 +134,7 @@ class Parser extends Recognizer {
 		return t;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Match current input symbol as a wildcard. If the symbol type matches
 	 * (i.e. has a value greater than 0), {@link ANTLRErrorStrategy//reportMatch}
@@ -152,6 +159,7 @@ class Parser extends Recognizer {
 			this.consume();
 		} else {
 			t = this._errHandler.recoverInline(this);
+			// noinspection JSUnresolvedVariable
 			if (this._buildParseTrees && t.tokenIndex === -1) {
 				// we must have conjured up a new token during single token
 				// insertion
@@ -162,6 +170,7 @@ class Parser extends Recognizer {
 		return t;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getParseListeners() {
 		return this._parseListeners || [];
 	}
@@ -224,12 +233,13 @@ class Parser extends Recognizer {
 		}
 	}
 
-// Remove all parse listeners.
+	// Remove all parse listeners.
+	// noinspection JSUnusedGlobalSymbols
 	removeParseListeners() {
 		this._parseListeners = null;
 	}
 
-// Notify any parse listeners of an enter rule event.
+	// Notify any parse listeners of an enter rule event.
 	triggerEnterRuleEvent() {
 		if (this._parseListeners !== null) {
 			const ctx = this._ctx;
@@ -260,10 +270,12 @@ class Parser extends Recognizer {
 	}
 
 	// Tell our token source and error strategy about a new way to create tokens.
+	// noinspection JSUnusedGlobalSymbols
 	setTokenFactory(factory) {
 		this._input.tokenSource._factory = factory;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * The ATN with bypass alternatives is expensive to create so we create it
 	 * lazily.
@@ -272,21 +284,25 @@ class Parser extends Recognizer {
 	 * implement the {@link //getSerializedATN()} method.
 	 */
 	getATNWithBypassAlts() {
+		// noinspection JSUnresolvedFunction
 		const serializedAtn = this.getSerializedATN();
 		if (serializedAtn === null) {
 			throw "The current parser does not support an ATN with bypass alternatives.";
 		}
+		// noinspection JSUnresolvedVariable
 		let result = this.bypassAltsAtnCache[serializedAtn];
 		if (result === null) {
 			const deserializationOptions = new ATNDeserializationOptions();
-			deserializationOptions.generateRuleBypassTransitions = true;
+			ATNDeserializer.generateRuleBypassTransitions = true;
 			result = new ATNDeserializer(deserializationOptions)
 					.deserialize(serializedAtn);
+			// noinspection JSUnresolvedVariable
 			this.bypassAltsAtnCache[serializedAtn] = result;
 		}
 		return result;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * The preferred method of getting a tree pattern. For example, here's a
 	 * sample use:
@@ -299,6 +315,7 @@ class Parser extends Recognizer {
 	 * String id = m.get("ID");
 	 * </pre>
 	 */
+	/*
 	compileParseTreePattern(pattern, patternRuleIndex, lexer) {
 		lexer = lexer || null;
 		if (lexer === null) {
@@ -334,6 +351,7 @@ class Parser extends Recognizer {
 		this.reset();
 		this._input = input;
 	}
+	*/
 
 	/**
 	 * Match needs to return the current input symbol, which gets put
@@ -356,6 +374,7 @@ class Parser extends Recognizer {
 		listener.syntaxError(this, offendingToken, line, column, msg, err);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Consume and return the {@linkplain //getCurrentToken current symbol}.
 	 *
@@ -404,6 +423,7 @@ class Parser extends Recognizer {
 		return o;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	addContextToParseTree() {
 		// add current context to parent if we have a parent
 		if (this._ctx.parentCtx !== null) {
@@ -411,11 +431,12 @@ class Parser extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Always called by generated parsers upon entry to a rule. Access field
 	 * {@link //_ctx} get the current context.
 	 */
-	enterRule(localctx, state, ruleIndex) {
+	enterRule(localctx, state, /*ruleIndex*/) {
 		this.state = state;
 		this._ctx = localctx;
 		this._ctx.start = this._input.LT(1);
@@ -437,6 +458,7 @@ class Parser extends Recognizer {
 		this._ctx = this._ctx.parentCtx;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	enterOuterAlt(localctx, altNum) {
 		localctx.setAltNumber(altNum);
 		// if we have new localctx, make sure we replace existing ctx
@@ -453,7 +475,7 @@ class Parser extends Recognizer {
 	/**
 	 * Get the precedence level for the top-most precedence rule.
 	 *
-	 * @return The precedence level for the top-most precedence rule, or -1 if
+	 * @return number The precedence level for the top-most precedence rule, or -1 if
 	 * the parser context is not nested within a precedence rule.
 	 */
 	getPrecedence() {
@@ -464,6 +486,7 @@ class Parser extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	enterRecursionRule(localctx, state, ruleIndex, precedence) {
 	   this.state = state;
 	   this._precedenceStack.push(precedence);
@@ -476,7 +499,8 @@ class Parser extends Recognizer {
    }
 
 	// Like {@link //enterRule} but for recursive rules.
-	pushNewRecursionContext(localctx, state, ruleIndex) {
+	// noinspection JSUnusedGlobalSymbols
+	pushNewRecursionContext(localctx, state, /*ruleIndex*/) {
 		const previous = this._ctx;
 		previous.parentCtx = localctx;
 		previous.invokingState = state;
@@ -493,6 +517,7 @@ class Parser extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	unrollRecursionContexts(parentCtx) {
 		this._precedenceStack.pop();
 		this._ctx.stop = this._input.LT(-1);
@@ -514,6 +539,7 @@ class Parser extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getInvokingContext(ruleIndex) {
 		let ctx = this._ctx;
 		while (ctx !== null) {
@@ -529,11 +555,13 @@ class Parser extends Recognizer {
 		return precedence >= this._precedenceStack[this._precedenceStack.length-1];
 	}
 
-	inContext(context) {
+	// noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
+	inContext(/*context*/) {
 		// TODO: useful in parser?
 		return false;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Checks whether or not {@code symbol} can follow the current state in the
 	 * ATN. The behavior of this method is equivalent to the following, but is
@@ -568,11 +596,7 @@ class Parser extends Recognizer {
 			}
 			ctx = ctx.parentCtx;
 		}
-		if (following.contains(Token.EPSILON) && symbol === Token.EOF) {
-			return true;
-		} else {
-			return false;
-		}
+		return following.contains(Token.EPSILON) && symbol === Token.EOF;
 	}
 
 	/**
@@ -586,6 +610,7 @@ class Parser extends Recognizer {
 		return this._interp.atn.getExpectedTokens(this.state, this._ctx);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getExpectedTokensWithinCurrentRule() {
 		const atn = this._interp.atn;
 		const s = atn.states[this.state];
@@ -593,6 +618,7 @@ class Parser extends Recognizer {
 	}
 
 	// Get a rule's index (i.e., {@code RULE_ruleName} field) or -1 if not found.
+	// noinspection JSUnusedGlobalSymbols
 	getRuleIndex(ruleName) {
 		const ruleIndex = this.getRuleIndexMap()[ruleName];
 		if (ruleIndex !== null) {
@@ -622,6 +648,7 @@ class Parser extends Recognizer {
 			if (ruleIndex < 0) {
 				stack.push("n/a");
 			} else {
+				// noinspection JSUnresolvedVariable
 				stack.push(this.ruleNames[ruleIndex]);
 			}
 			p = p.parentCtx;
@@ -630,11 +657,13 @@ class Parser extends Recognizer {
 	}
 
 	// For debugging and other purposes.
+	// noinspection JSUnusedGlobalSymbols
 	getDFAStrings() {
 		return this._interp.decisionToDFA.toString();
 	}
 
 	// For debugging and other purposes.
+	// noinspection JSUnusedGlobalSymbols
 	dumpDFA() {
 		let seenOne = false;
 		for (let i = 0; i < this._interp.decisionToDFA.length; i++) {
@@ -643,7 +672,9 @@ class Parser extends Recognizer {
 				if (seenOne) {
 					console.log();
 				}
+				// noinspection JSUnresolvedVariable,JSUnresolvedFunction
 				this.printer.println("Decision " + dfa.decision + ":");
+				// noinspection JSUnresolvedVariable,JSUnresolvedFunction
 				this.printer.print(dfa.toString(this.literalNames, this.symbolicNames));
 				seenOne = true;
 			}
@@ -687,4 +718,3 @@ class Parser extends Recognizer {
  */
 Parser.bypassAltsAtnCache = {};
 
-module.exports = Parser;

@@ -3,10 +3,11 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {hashStuff} = require("../Utils");
-const {LexerIndexedCustomAction} = require('./LexerAction');
+import {hashStuff} from "../Utils";
+import LexerIndexedCustomAction from "../action/LexerIndexedCustomAction";
 
-class LexerActionExecutor {
+
+export default class LexerActionExecutor {
 	/**
 	 * Represents an executor for a sequence of lexer actions which traversed during
 	 * the matching operation of a lexer rule (token).
@@ -130,12 +131,12 @@ class LexerActionExecutor {
 			return true;
 		} else if (!(other instanceof LexerActionExecutor)) {
 			return false;
-		} else if (this.cachedHashCode != other.cachedHashCode) {
+		} else if (this.cachedHashCode !== other.cachedHashCode) {
 			return false;
-		} else if (this.lexerActions.length != other.lexerActions.length) {
+		} else if (this.lexerActions.length !== other.lexerActions.length) {
 			return false;
 		} else {
-			const numActions = this.lexerActions.length
+			const numActions = this.lexerActions.length;
 			for (let idx = 0; idx < numActions; ++idx) {
 				if (!this.lexerActions[idx].equals(other.lexerActions[idx])) {
 					return false;
@@ -169,5 +170,3 @@ class LexerActionExecutor {
 	}
 }
 
-
-module.exports = LexerActionExecutor;

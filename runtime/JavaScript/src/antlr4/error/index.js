@@ -3,12 +3,18 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-module.exports.RecognitionException = require('./Errors').RecognitionException;
-module.exports.NoViableAltException = require('./Errors').NoViableAltException;
-module.exports.LexerNoViableAltException = require('./Errors').LexerNoViableAltException;
-module.exports.InputMismatchException = require('./Errors').InputMismatchException;
-module.exports.FailedPredicateException = require('./Errors').FailedPredicateException;
-module.exports.DiagnosticErrorListener = require('./DiagnosticErrorListener');
-module.exports.BailErrorStrategy = require('./ErrorStrategy').BailErrorStrategy;
-module.exports.DefaultErrorStrategy = require('./ErrorStrategy').DefaultErrorStrategy;
-module.exports.ErrorListener = require('./ErrorListener').ErrorListener;
+import RecognitionException from "./RecognitionException";
+import DiagnosticErrorListener from "./DiagnosticErrorListener";
+import NoViableAltException from "./NoViableAltException";
+import LexerNoViableAltException from "./LexerNoViableAltException";
+import InputMismatchException from "./InputMismatchException";
+import FailedPredicateException from "./FailedPredicateException";
+import DefaultErrorStrategy from "./DefaultErrorStrategy";
+import BailErrorStrategy from "./BailErrorStrategy";
+import ErrorListener from "./ErrorListener";
+import ConsoleErrorListener from "./ConsoleErrorListener";
+
+const error = { RecognitionException, NoViableAltException, LexerNoViableAltException, InputMismatchException,
+    FailedPredicateException, DiagnosticErrorListener, BailErrorStrategy, DefaultErrorStrategy, ErrorListener, ConsoleErrorListener };
+
+export default error;

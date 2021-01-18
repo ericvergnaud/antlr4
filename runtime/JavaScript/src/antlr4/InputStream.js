@@ -3,9 +3,7 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-require('./polyfills/codepointat');
-require('./polyfills/fromcodepoint');
+import Token from "./Token";
 
 /**
  * If decodeToUnicodeCodePoints is true, the input is treated
@@ -14,7 +12,8 @@ require('./polyfills/fromcodepoint');
  * Otherwise, the input is treated as a series of 16-bit UTF-16 code
  * units.
  */
-class InputStream {
+export default class InputStream {
+
 	constructor(data, decodeToUnicodeCodePoints) {
 		this.name = "<empty>";
 		this.strdata = data;
@@ -73,6 +72,7 @@ class InputStream {
 	}
 
 // mark/release do nothing; we have entire buffer
+	// noinspection JSMethodCanBeStatic
 	mark() {
 		return -1;
 	}
@@ -127,4 +127,3 @@ class InputStream {
 }
 
 
-module.exports = InputStream;

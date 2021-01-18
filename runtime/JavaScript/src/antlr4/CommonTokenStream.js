@@ -4,8 +4,8 @@
  */
 
 
-const Token = require('./Token').Token;
-const BufferedTokenStream = require('./BufferedTokenStream');
+import Token from "./Token";
+import BufferedTokenStream from "./BufferedTokenStream";
 
 /**
  * This class extends {@link BufferedTokenStream} with functionality to filter
@@ -31,7 +31,7 @@ const BufferedTokenStream = require('./BufferedTokenStream');
  * such a rule will not be available as part of the token stream, regardless of
  * channel.</p>
  */
-class CommonTokenStream extends BufferedTokenStream {
+export default class CommonTokenStream extends BufferedTokenStream {
     constructor(lexer, channel) {
         super(lexer);
         this.channel = channel===undefined ? Token.DEFAULT_CHANNEL : channel;
@@ -81,6 +81,7 @@ class CommonTokenStream extends BufferedTokenStream {
     }
 
     // Count EOF just once.
+    // noinspection JSUnusedGlobalSymbols
     getNumberOfOnChannelTokens() {
         let n = 0;
         this.fill();
@@ -97,4 +98,3 @@ class CommonTokenStream extends BufferedTokenStream {
     }
 }
 
-module.exports = CommonTokenStream;

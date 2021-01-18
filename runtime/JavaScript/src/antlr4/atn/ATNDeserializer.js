@@ -3,56 +3,42 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./../Token');
-const ATN = require('./ATN');
-const ATNType = require('./ATNType');
+import Token from "./../Token";
+import ATN from "./ATN";
+import ATNType from "./ATNType";
+import ATNDeserializationOptions from "./ATNDeserializationOptions";
+import BlockStartState from "../state/BlockStartState";
+import BasicState from "../state/BasicState";
+import BasicBlockStartState from "../state/BasicBlockStartState";
+import BlockEndState from "../state/BlockEndState";
+import LexerChannelAction from "../action/LexerChannelAction";
+import LexerCustomAction from "../action/LexerCustomAction";
+import LexerModeAction from "../action/LexerModeAction";
+import LexerPushModeAction from "../action/LexerPushModeAction";
+import LexerTypeAction from "../action/LexerTypeAction";
+import IntervalSet from "../IntervalSet";
+import LexerActionType from "./LexerActionType";
+import RangeTransition from "../transition/RangeTransition";
+import RuleTransition from "../transition/RuleTransition";
+import PredicateTransition from "../transition/PredicateTransition";
+import PrecedencePredicateTransition from "../transition/PrecedencePredicateTransition";
+import AtomTransition from "../transition/AtomTransition";
+import ActionTransition from "../transition/ActionTransition";
+import SetTransition from "../transition/SetTransition";
+import NotSetTransition from "../transition/NotSetTransition";
+import WildcardTransition from "../transition/WildcardTransition";
+import PlusBlockStartState from "../state/PlusBlockStartState";
+import StarLoopbackState from "../state/StarLoopbackState";
+import LoopEndState from "../state/LoopEndState";
+import RuleStartState from "../state/RuleStartState";
+import DecisionState from "../state/DecisionState";
+import TokensStartState from "../state/TokensStartState";
+import RuleStopState from "../state/RuleStopState";
+import StarLoopEntryState from "../state/StarLoopEntryState";
+import PlusLoopbackState from "../state/PlusLoopbackState";
+import StarBlockStartState from "../state/StarBlockStartState";
+import EpsilonTransition from "../transition/EpsilonTransition";
 
-const {
-    ATNState,
-    BasicState,
-    DecisionState,
-    BlockStartState,
-    BlockEndState,
-    LoopEndState,
-    RuleStartState,
-    RuleStopState,
-    TokensStartState,
-    PlusLoopbackState,
-    StarLoopbackState,
-    StarLoopEntryState,
-    PlusBlockStartState,
-    StarBlockStartState,
-    BasicBlockStartState
-} = require('./ATNState');
-
-const {
-    Transition,
-    AtomTransition,
-    SetTransition,
-    NotSetTransition,
-    RuleTransition,
-    RangeTransition,
-    ActionTransition,
-    EpsilonTransition,
-    WildcardTransition,
-    PredicateTransition,
-    PrecedencePredicateTransition
-} = require('./Transition')
-
-const {IntervalSet} = require('./../IntervalSet');
-const ATNDeserializationOptions = require('./ATNDeserializationOptions');
-
-const {
-    LexerActionType,
-    LexerSkipAction,
-    LexerChannelAction,
-    LexerCustomAction,
-    LexerMoreAction,
-    LexerTypeAction,
-    LexerPushModeAction,
-    LexerPopModeAction,
-    LexerModeAction,
-} = require('./LexerAction');
 
 // This is the earliest supported serialized UUID.
 // stick to serialized version for now, we don't need a UUID instance
@@ -76,13 +62,14 @@ const SERIALIZED_UUID = ADDED_UNICODE_SMP;
 
 function initArray( length, value) {
 	const tmp = [];
-	tmp[length-1] = value;
-	return tmp.map(function(i) {return value;});
+	while ( --length >= 0)
+        tmp[length] = value;
+	return tmp;
 }
 
-class ATNDeserializer {
-    constructor(options) {
+export default class ATNDeserializer {
 
+    constructor(options) {
         if ( options=== undefined || options === null ) {
             options = ATNDeserializationOptions.defaultOptions;
         }
@@ -91,20 +78,21 @@ class ATNDeserializer {
         this.actionFactories = null;
     }
 
+    // noinspection JSClosureCompilerSyntax
     /**
      * Determines if a particular serialized representation of an ATN supports
-     * a particular feature, identified by the {@link UUID} used for serializing
+     * a particular feature, identified by the UUID used for serializing
      * the ATN at the time the feature was first introduced.
      *
-     * @param feature The {@link UUID} marking the first time the feature was
+     * @param feature The UUID marking the first time the feature was
      * supported in the serialized ATN.
-     * @param actualUuid The {@link UUID} of the actual serialized ATN which is
+     * @param actualUuid The UUID of the actual serialized ATN which is
      * currently being deserialized.
      * @return {@code true} if the {@code actualUuid} value represents a
      * serialized ATN at or after the feature identified by {@code feature} was
      * introduced; otherwise, {@code false}.
     */
-    isFeatureSupported(feature, actualUuid) {
+    static isFeatureSupported(feature, actualUuid) {
         const idx1 = SUPPORTED_UUIDS.indexOf(feature);
         if (idx1<0) {
             return false;
@@ -126,16 +114,16 @@ class ATNDeserializer {
         this.readSets(atn, sets, this.readInt.bind(this));
         // Next, if the ATN was serialized with the Unicode SMP feature,
         // deserialize sets with 32-bit arguments <= U+10FFFF.
-        if (this.isFeatureSupported(ADDED_UNICODE_SMP, this.uuid)) {
+        if (ATNDeserializer.isFeatureSupported(ADDED_UNICODE_SMP, this.uuid)) {
             this.readSets(atn, sets, this.readInt32.bind(this));
         }
         this.readEdges(atn, sets);
         this.readDecisions(atn);
         this.readLexerActions(atn);
-        this.markPrecedenceDecisions(atn);
+        ATNDeserializer.markPrecedenceDecisions(atn);
         this.verifyATN(atn);
         if (this.deserializationOptions.generateRuleBypassTransitions && atn.grammarType === ATNType.PARSER ) {
-            this.generateRuleBypassTransitions(atn);
+            ATNDeserializer.generateRuleBypassTransitions(atn);
             // re-verify after modification
             this.verifyATN(atn);
         }
@@ -164,8 +152,8 @@ class ATNDeserializer {
     checkUUID() {
         const uuid = this.readUUID();
         if (SUPPORTED_UUIDS.indexOf(uuid)<0) {
-            throw ("Could not deserialize ATN with UUID: " + uuid +
-                            " (expected " + SERIALIZED_UUID + " or a legacy UUID).", uuid, SERIALIZED_UUID);
+            const message = "Could not deserialize ATN with UUID: " + uuid + " (expected " + SERIALIZED_UUID + " or a legacy UUID).";
+            throw new Error(message);
         }
         this.uuid = uuid;
     }
@@ -292,7 +280,7 @@ class ATNDeserializer {
             const arg1 = this.readInt();
             const arg2 = this.readInt();
             const arg3 = this.readInt();
-            trans = this.edgeFactory(atn, ttype, src, trg, arg1, arg2, arg3, sets);
+            trans = ATNDeserializer.edgeFactory(atn, ttype, src, trg, arg1, arg2, arg3, sets);
             const srcState = atn.states[src];
             srcState.addTransition(trans);
         }
@@ -378,18 +366,18 @@ class ATNDeserializer {
         }
     }
 
-    generateRuleBypassTransitions(atn) {
+    static generateRuleBypassTransitions(atn) {
         let i;
         const count = atn.ruleToStartState.length;
         for(i=0; i<count; i++) {
             atn.ruleToTokenType[i] = atn.maxTokenType + i + 1;
         }
         for(i=0; i<count; i++) {
-            this.generateRuleBypassTransition(atn, i);
+            ATNDeserializer.generateRuleBypassTransition(atn, i);
         }
     }
 
-    generateRuleBypassTransition(atn, idx) {
+    static generateRuleBypassTransition(atn, idx) {
         let i, state;
         const bypassStart = new BasicBlockStartState();
         bypassStart.ruleIndex = idx;
@@ -412,7 +400,7 @@ class ATNDeserializer {
             endState = null;
             for(i=0; i<atn.states.length; i++) {
                 state = atn.states[i];
-                if (this.stateIsEndStateFor(state, idx)) {
+                if (ATNDeserializer.stateIsEndStateFor(state, idx)) {
                     endState = state;
                     excludeTransition = state.loopBackState.transitions[0];
                     break;
@@ -458,7 +446,7 @@ class ATNDeserializer {
         bypassStart.addTransition(new EpsilonTransition(matchState));
     }
 
-    stateIsEndStateFor(state, idx) {
+    static stateIsEndStateFor(state, idx) {
         if ( state.ruleIndex !== idx) {
             return null;
         }
@@ -483,7 +471,7 @@ class ATNDeserializer {
      * correct value.
      * @param atn The ATN.
      */
-    markPrecedenceDecisions(atn) {
+    static markPrecedenceDecisions(atn) {
         for(let i=0; i<atn.states.length; i++) {
             const state = atn.states[i];
             if (!( state instanceof StarLoopEntryState)) {
@@ -514,46 +502,43 @@ class ATNDeserializer {
             if (state === null) {
                 continue;
             }
-            this.checkCondition(state.epsilonOnlyTransitions || state.transitions.length <= 1);
+            ATNDeserializer.checkCondition(state.epsilonOnlyTransitions || state.transitions.length <= 1);
             if (state instanceof PlusBlockStartState) {
-                this.checkCondition(state.loopBackState !== null);
+                ATNDeserializer.checkCondition(state.loopBackState !== null);
             } else  if (state instanceof StarLoopEntryState) {
-                this.checkCondition(state.loopBackState !== null);
-                this.checkCondition(state.transitions.length === 2);
+                ATNDeserializer.checkCondition(state.loopBackState !== null);
+                ATNDeserializer.checkCondition(state.transitions.length === 2);
                 if (state.transitions[0].target instanceof StarBlockStartState) {
-                    this.checkCondition(state.transitions[1].target instanceof LoopEndState);
-                    this.checkCondition(!state.nonGreedy);
+                    ATNDeserializer.checkCondition(state.transitions[1].target instanceof LoopEndState);
+                    ATNDeserializer.checkCondition(!state.nonGreedy);
                 } else if (state.transitions[0].target instanceof LoopEndState) {
-                    this.checkCondition(state.transitions[1].target instanceof StarBlockStartState);
-                    this.checkCondition(state.nonGreedy);
+                    ATNDeserializer.checkCondition(state.transitions[1].target instanceof StarBlockStartState);
+                    ATNDeserializer.checkCondition(state.nonGreedy);
                 } else {
                     throw("IllegalState");
                 }
             } else if (state instanceof StarLoopbackState) {
-                this.checkCondition(state.transitions.length === 1);
-                this.checkCondition(state.transitions[0].target instanceof StarLoopEntryState);
+                ATNDeserializer.checkCondition(state.transitions.length === 1);
+                ATNDeserializer.checkCondition(state.transitions[0].target instanceof StarLoopEntryState);
             } else if (state instanceof LoopEndState) {
-                this.checkCondition(state.loopBackState !== null);
+                ATNDeserializer.checkCondition(state.loopBackState !== null);
             } else if (state instanceof RuleStartState) {
-                this.checkCondition(state.stopState !== null);
+                ATNDeserializer.checkCondition(state.stopState !== null);
             } else if (state instanceof BlockStartState) {
-                this.checkCondition(state.endState !== null);
+                ATNDeserializer.checkCondition(state.endState !== null);
             } else if (state instanceof BlockEndState) {
-                this.checkCondition(state.startState !== null);
+                ATNDeserializer.checkCondition(state.startState !== null);
             } else if (state instanceof DecisionState) {
-                this.checkCondition(state.transitions.length <= 1 || state.decision >= 0);
+                ATNDeserializer.checkCondition(state.transitions.length <= 1 || state.decision >= 0);
             } else {
-                this.checkCondition(state.transitions.length <= 1 || (state instanceof RuleStopState));
+                ATNDeserializer.checkCondition(state.transitions.length <= 1 || (state instanceof RuleStopState));
             }
         }
     }
 
-    checkCondition(condition, message) {
+    static checkCondition(condition, message) {
         if (!condition) {
-            if (message === undefined || message===null) {
-                message = "IllegalState";
-            }
-            throw (message);
+            throw new Error(message || "IllegalState");
         }
     }
 
@@ -565,12 +550,6 @@ class ATNDeserializer {
         const low = this.readInt();
         const high = this.readInt();
         return low | (high << 16);
-    }
-
-    readLong() {
-        const low = this.readInt32();
-        const high = this.readInt32();
-        return (low & 0x00000000FFFFFFFF) | (high << 32);
     }
 
     readUUID() {
@@ -591,7 +570,7 @@ class ATNDeserializer {
         byteToHex[bb[14]] + byteToHex[bb[15]];
     }
 
-    edgeFactory(atn, type, src, trg, arg1, arg2, arg3, sets) {
+    static edgeFactory(atn, type, src, trg, arg1, arg2, arg3, sets) {
         const target = atn.states[trg];
         switch(type) {
         case Transition.EPSILON:
@@ -651,14 +630,14 @@ class ATNDeserializer {
     lexerActionFactory(type, data1, data2) {
         if (this.actionFactories === null) {
             const af = [];
-            af[LexerActionType.CHANNEL] = (data1, data2) => new LexerChannelAction(data1);
+            af[LexerActionType.CHANNEL] = (data1, /*data2*/) => new LexerChannelAction(data1);
             af[LexerActionType.CUSTOM] = (data1, data2) => new LexerCustomAction(data1, data2);
-            af[LexerActionType.MODE] = (data1, data2) => new LexerModeAction(data1);
-            af[LexerActionType.MORE] = (data1, data2) => LexerMoreAction.INSTANCE;
-            af[LexerActionType.POP_MODE] = (data1, data2) => LexerPopModeAction.INSTANCE;
-            af[LexerActionType.PUSH_MODE] = (data1, data2) => new LexerPushModeAction(data1);
-            af[LexerActionType.SKIP] = (data1, data2) => LexerSkipAction.INSTANCE;
-            af[LexerActionType.TYPE] = (data1, data2) => new LexerTypeAction(data1);
+            af[LexerActionType.MODE] = (data1, /*data2*/) => new LexerModeAction(data1);
+            af[LexerActionType.MORE] = (/*data1, data2*/) => LexerMoreAction.INSTANCE;
+            af[LexerActionType.POP_MODE] = (/*data1, data2*/) => LexerPopModeAction.INSTANCE;
+            af[LexerActionType.PUSH_MODE] = (data1, /*data2*/) => new LexerPushModeAction(data1);
+            af[LexerActionType.SKIP] = (/*data1, data2*/) => LexerSkipAction.INSTANCE;
+            af[LexerActionType.TYPE] = (data1, /*data2*/) => new LexerTypeAction(data1);
             this.actionFactories = af;
         }
         if (type>this.actionFactories.length || this.actionFactories[type] === null) {
@@ -679,5 +658,3 @@ function createByteToHex() {
 
 const byteToHex = createByteToHex();
 
-
-module.exports = ATNDeserializer;

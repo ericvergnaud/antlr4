@@ -3,10 +3,11 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const ATN = require('./ATN');
-const Utils = require('./../Utils');
-const {SemanticContext} = require('./SemanticContext');
-const {merge} = require('./../PredictionContext');
+import ATN from "./ATN";
+import * as Utils from "./../Utils";
+import SemanticContext from "../context/SemanticContext";
+import {merge} from "../context/ContextUtils";
+
 
 function hashATNConfig(c) {
 	return c.hashCodeForConfigSet();
@@ -26,7 +27,8 @@ function equalATNConfigs(a, b) {
  * info about the set, with support for combining similar configurations using a
  * graph-structured stack
  */
-class ATNConfigSet {
+export default class ATNConfigSet {
+
 	constructor(fullCtx) {
 		/**
 		 * The reason that we need this is because we don't want the hash map to use
@@ -121,6 +123,7 @@ class ATNConfigSet {
 		return true;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getStates() {
 		const states = new Utils.Set();
 		for (let i = 0; i < this.configs.length; i++) {
@@ -129,6 +132,7 @@ class ATNConfigSet {
 		return states;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getPredicates() {
 		const preds = [];
 		for (let i = 0; i < this.configs.length; i++) {
@@ -153,6 +157,7 @@ class ATNConfigSet {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	addAll(coll) {
 		for (let i = 0; i < coll.length; i++) {
 			this.add(coll[i]);
@@ -199,6 +204,7 @@ class ATNConfigSet {
 		return this.configLookup.contains(item);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	containsFast(item) {
 		if (this.configLookup === null) {
 			throw "This method is not implemented for readonly sets.";
@@ -206,6 +212,7 @@ class ATNConfigSet {
 		return this.configLookup.containsFast(item);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	clear() {
 		if (this.readOnly) {
 			throw "This set is readonly";
@@ -240,14 +247,3 @@ class ATNConfigSet {
 }
 
 
-class OrderedATNConfigSet extends ATNConfigSet {
-	constructor() {
-		super();
-		this.configLookup = new Utils.Set();
-	}
-}
-
-module.exports = {
-	ATNConfigSet,
-	OrderedATNConfigSet
-}

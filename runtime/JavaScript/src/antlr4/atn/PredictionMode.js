@@ -3,12 +3,12 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Map, BitSet, AltDict, hashStuff} = require('./../Utils');
-const ATN = require('./ATN');
-const {RuleStopState} = require('./ATNState');
-const {ATNConfigSet} = require('./ATNConfigSet');
-const {ATNConfig} = require('./ATNConfig');
-const {SemanticContext} = require('./SemanticContext');
+import {AltDict, BitSet, hashStuff, Map} from "./../Utils";
+import ATN from "./ATN";
+import ATNConfigSet from "./ATNConfigSet";
+import RuleStopState from "../state/RuleStopState";
+import ATNConfig from "./ATNConfig";
+
 
 /**
  * This enumeration defines the prediction modes available in ANTLR 4 along with
@@ -230,8 +230,7 @@ const PredictionMode = {
      * context).
      *
      * @param configs the configuration set to test
-     * @return {@code true} if all configurations in {@code configs} are in a
-     * {@link RuleStopState}, otherwise {@code false}
+     * @return boolean {@code true} if all configurations in {@code configs} are in a {@link RuleStopState}, otherwise {@code false}
      */
     allConfigsInRuleStopStates: function(configs) {
         for(let i=0;i<configs.items.length;i++) {
@@ -481,11 +480,11 @@ const PredictionMode = {
      * in {@code altsets}.
      *
      * @param altsets a collection of alternative subsets
-     * @return the set of represented alternatives in {@code altsets}
+     * @return BitSet the set of represented alternatives in {@code altsets}
      */
     getAlts: function(altsets) {
         const all = new BitSet();
-        altsets.map( function(alts) { all.or(alts); });
+        altsets.map( alts => all.or(alts));
         return all;
     },
 
@@ -500,8 +499,8 @@ const PredictionMode = {
      */
     getConflictingAltSubsets: function(configs) {
         const configToAlts = new Map();
-        configToAlts.hashFunction = function(cfg) { hashStuff(cfg.state.stateNumber, cfg.context); };
-        configToAlts.equalsFunction = function(c1, c2) { return c1.state.stateNumber==c2.state.stateNumber && c1.context.equals(c2.context);}
+        configToAlts.hashFunction = cfg => hashStuff(cfg.state.stateNumber, cfg.context);
+        configToAlts.equalsFunction = (c1, c2) => c1.state.stateNumber === c2.state.stateNumber && c1.context.equals(c2.context);
         configs.items.map(function(cfg) {
             let alts = configToAlts.get(cfg);
             if (alts === null) {
@@ -557,6 +556,6 @@ const PredictionMode = {
         }
         return result;
     }
-}
+};
 
-module.exports = PredictionMode;
+export default PredictionMode;

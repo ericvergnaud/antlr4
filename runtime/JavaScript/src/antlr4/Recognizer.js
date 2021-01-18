@@ -3,41 +3,47 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-const {ConsoleErrorListener} = require('./error/ErrorListener');
-const {ProxyErrorListener} = require('./error/ErrorListener');
+import Token from "./Token";
+import ProxyErrorListener from "./error/ProxyErrorListener";
 
-class Recognizer {
+
+export default class Recognizer {
     constructor() {
         this._listeners = [ ConsoleErrorListener.INSTANCE ];
         this._interp = null;
         this._stateNumber = -1;
     }
 
+    // noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
     checkVersion(toolVersion) {
         const runtimeVersion = "4.9.1";
-        if (runtimeVersion!==toolVersion) {
-            console.log("ANTLR runtime and generated code versions disagree: "+runtimeVersion+"!="+toolVersion);
+        if (runtimeVersion !== toolVersion) {
+            console.log("ANTLR runtime and generated code versions disagree: " + runtimeVersion + "!=" + toolVersion);
         }
     }
 
+    // noinspection JSUnusedGlobalSymbols
     addErrorListener(listener) {
         this._listeners.push(listener);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     removeErrorListeners() {
         this._listeners = [];
     }
 
     getTokenTypeMap() {
+        // noinspection JSUnresolvedFunction
         const tokenNames = this.getTokenNames();
         if (tokenNames===null) {
             throw("The current recognizer does not provide a list of token names.");
         }
+        // noinspection JSUnresolvedVariable
         let result = this.tokenTypeMapCache[tokenNames];
-        if(result===undefined) {
+        if(result === undefined) {
             result = tokenNames.reduce(function(o, k, i) { o[k] = i; });
             result.EOF = Token.EOF;
+            // noinspection JSUnresolvedVariable
             this.tokenTypeMapCache[tokenNames] = result;
         }
         return result;
@@ -48,18 +54,22 @@ class Recognizer {
      * <p>Used for XPath and tree pattern compilation.</p>
      */
     getRuleIndexMap() {
+        // noinspection JSUnresolvedVariable
         const ruleNames = this.ruleNames;
         if (ruleNames===null) {
             throw("The current recognizer does not provide a list of rule names.");
         }
+        // noinspection JSUnresolvedVariable
         let result = this.ruleIndexMapCache[ruleNames]; // todo: should it be Recognizer.ruleIndexMapCache ?
         if(result===undefined) {
             result = ruleNames.reduce(function(o, k, i) { o[k] = i; });
+            // noinspection JSUnresolvedVariable
             this.ruleIndexMapCache[ruleNames] = result;
         }
         return result;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     getTokenType(tokenName) {
         const ttype = this.getTokenTypeMap()[tokenName];
         if (ttype !==undefined) {
@@ -70,12 +80,16 @@ class Recognizer {
     }
 
     // What is the error header, normally line/character position information?
+    // noinspection JSUnusedGlobalSymbols,JSMethodCanBeStatic
     getErrorHeader(e) {
+        // noinspection JSUnresolvedFunction
         const line = e.getOffendingToken().line;
+        // noinspection JSUnresolvedFunction
         const column = e.getOffendingToken().column;
         return "line " + line + ":" + column;
     }
 
+    // noinspection JSUnusedGlobalSymbols,JSMethodCanBeStatic
     /**
      * How should a token be displayed in an error message? The default
      * is to display just the text, but during development you might
@@ -88,7 +102,7 @@ class Recognizer {
      * @deprecated This method is not called by the ANTLR 4 Runtime. Specific
      * implementations of {@link ANTLRErrorStrategy} may provide a similar
      * feature when necessary. For example, see
-     * {@link DefaultErrorStrategy//getTokenErrorDisplay}.*/
+     * {@link DefaultErrorStrategy //getTokenErrorDisplay}.*/
     getTokenErrorDisplay(t) {
         if (t===null) {
             return "<no token>";
@@ -109,15 +123,17 @@ class Recognizer {
         return new ProxyErrorListener(this._listeners);
     }
 
+    // noinspection JSMethodCanBeStatic
     /**
      * subclass needs to override these if there are sempreds or actions
      * that the ATN interp needs to execute
      */
-    sempred(localctx, ruleIndex, actionIndex) {
+    sempred(/*localctx, ruleIndex, actionIndex*/) {
         return true;
     }
 
-    precpred(localctx , precedence) {
+    // noinspection JSUnusedGlobalSymbols,JSMethodCanBeStatic
+    precpred(/*localctx , precedence*/) {
         return true;
     }
 
@@ -133,4 +149,3 @@ class Recognizer {
 Recognizer.tokenTypeMapCache = {};
 Recognizer.ruleIndexMapCache = {};
 
-module.exports = Recognizer;

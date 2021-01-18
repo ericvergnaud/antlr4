@@ -3,14 +3,10 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const RuleContext = require('./RuleContext');
-const Tree = require('./tree/Tree');
-const INVALID_INTERVAL = Tree.INVALID_INTERVAL;
-const TerminalNode = Tree.TerminalNode;
-const TerminalNodeImpl = Tree.TerminalNodeImpl;
-const ErrorNodeImpl = Tree.ErrorNodeImpl;
-const Interval = require("./IntervalSet").Interval;
-
+import RuleContext from "./RuleContext";
+import Interval from "../Interval";
+import ErrorNode from "../tree/ErrorNode";
+import TerminalNode from "../tree/TerminalNode";
 /**
  * A rule invocation record for parsing.
  *
@@ -35,7 +31,7 @@ const Interval = require("./IntervalSet").Interval;
  *  group values such as this aggregate.  The getters/setters are there to
  *  satisfy the superclass interface.
  */
-class ParserRuleContext extends RuleContext {
+export default class ParserRuleContext extends RuleContext {
 	constructor(parent, invokingStateNumber) {
 		parent = parent || null;
 		invokingStateNumber = invokingStateNumber || null;
@@ -59,6 +55,7 @@ class ParserRuleContext extends RuleContext {
 	}
 
 	// COPY a ctx (I'm deliberately not using copy constructor)
+	// noinspection JSUnusedGlobalSymbols
 	copyFrom(ctx) {
 		// from RuleContext
 		this.parentCtx = ctx.parentCtx;
@@ -71,7 +68,7 @@ class ParserRuleContext extends RuleContext {
 			this.children = [];
 			// reset parent pointer for any error nodes
 			ctx.children.map(function(child) {
-				if (child instanceof ErrorNodeImpl) {
+				if (child instanceof ErrorNode) {
 					this.children.push(child);
 					child.parentCtx = this;
 				}
@@ -106,14 +103,14 @@ class ParserRuleContext extends RuleContext {
 	}
 
 	addTokenNode(token) {
-		const node = new TerminalNodeImpl(token);
+		const node = new TerminalNode(token);
 		this.addChild(node);
 		node.parentCtx = this;
 		return node;
 	}
 
 	addErrorNode(badToken) {
-		const node = new ErrorNodeImpl(badToken);
+		const node = new ErrorNode(badToken);
 		this.addChild(node);
 		node.parentCtx = this;
 		return node;
@@ -141,6 +138,7 @@ class ParserRuleContext extends RuleContext {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getToken(ttype, i) {
 		if (this.children === null || i < 0 || i >= this.children.length) {
 			return null;
@@ -177,10 +175,12 @@ class ParserRuleContext extends RuleContext {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getTypedRuleContext(ctxType, i) {
 		return this.getChild(i, ctxType);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getTypedRuleContexts(ctxType) {
 		if (this.children=== null) {
 			return [];
@@ -206,7 +206,7 @@ class ParserRuleContext extends RuleContext {
 
 	getSourceInterval() {
 		if( this.start === null || this.stop === null) {
-			return INVALID_INTERVAL;
+			return Interval.INVALID_INTERVAL;
 		} else {
 			return new Interval(this.start.tokenIndex, this.stop.tokenIndex);
 		}
@@ -215,11 +215,13 @@ class ParserRuleContext extends RuleContext {
 
 RuleContext.EMPTY = new ParserRuleContext();
 
+/*
 class InterpreterRuleContext extends ParserRuleContext {
+
 	constructor(parent, invokingStateNumber, ruleIndex) {
 		super(parent, invokingStateNumber);
 		this.ruleIndex = ruleIndex;
 	}
-}
 
-module.exports = ParserRuleContext;
+}
+*/

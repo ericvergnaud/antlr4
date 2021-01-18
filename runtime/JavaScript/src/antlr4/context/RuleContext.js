@@ -3,16 +3,16 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {RuleNode} = require('./tree/Tree');
-const {INVALID_INTERVAL} = require('./tree/Tree');
-const Trees = require('./tree/Trees');
 
-class RuleContext extends RuleNode {
+import {toStringTree} from "../tree/TreeUtils";
+import RuleNode from "../tree/RuleNode";
+
+export default class RuleContext extends RuleNode {
 	/** A rule context is a record of a single rule invocation. It knows
 	 * which context invoked it, if any. If there is no parent context, then
 	 * naturally the invoking state is not valid.  The parent link
 	 * provides a chain upwards from the current rule invocation to the root
-	 * of the invocation tree, forming a stack. We actually carry no
+	 * of the invocation tree, forming a stack. We actually carry no‹
 	 * information about the rule associated with this context (except
 	 * when parsing). We keep only the state number of the invoking state from
 	 * the ATN submachine that invoked this. Contrast this with the s
@@ -40,6 +40,7 @@ class RuleContext extends RuleNode {
 		this.invokingState = invokingState || -1;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	depth() {
 		let n = 0;
 		let p = this;
@@ -58,15 +59,17 @@ class RuleContext extends RuleNode {
 		return this.invokingState === -1;
 	}
 
-// satisfy the ParseTree / SyntaxTree interface
+	// satisfy the ParseTree / SyntaxTree interface
+	// noinspection JSUnusedGlobalSymbols,JSMethodCanBeStatic
 	getSourceInterval() {
-		return INVALID_INTERVAL;
+		return Interval.INVALID_INTERVAL;
 	}
 
 	getRuleContext() {
 		return this;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getPayload() {
 		return this;
 	}
@@ -89,6 +92,7 @@ class RuleContext extends RuleNode {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * For rule associated with this parse tree internal node, return
 	 * the outer alternative number used to match the input. Default
@@ -111,10 +115,12 @@ class RuleContext extends RuleNode {
 	 */
 	setAltNumber(altNumber) { }
 
-	getChild(i) {
+	// noinspection JSMethodCanBeStatic
+	getChild(/*i*/) {
 		return null;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	getChildCount() {
 		return 0;
 	}
@@ -123,12 +129,13 @@ class RuleContext extends RuleNode {
 		return visitor.visitChildren(this);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Print out a whole tree, not just a node, in LISP format
 	 * (root child1 .. childN). Print just a node if this is a leaf.
 	 */
 	toStringTree(ruleNames, recog) {
-		return Trees.toStringTree(this, ruleNames, recog);
+		return toStringTree(this, ruleNames, recog);
 	}
 
 	toString(ruleNames, stop) {
@@ -157,4 +164,4 @@ class RuleContext extends RuleNode {
 	}
 }
 
-module.exports = RuleContext;
+

@@ -3,8 +3,12 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-exports.ATN = require('./ATN');
-exports.ATNDeserializer = require('./ATNDeserializer');
-exports.LexerATNSimulator = require('./LexerATNSimulator');
-exports.ParserATNSimulator = require('./ParserATNSimulator');
-exports.PredictionMode = require('./PredictionMode');
+import ATN from "./ATN";
+import ATNDeserializer from "./ATNDeserializer";
+import LexerATNSimulator from "./LexerATNSimulator";
+import ParserATNSimulator from "./ParserATNSimulator";
+import PredictionMode from "./PredictionMode";
+
+const atn = { ATN, ATNDeserializer, LexerATNSimulator, ParserATNSimulator, PredictionMode }
+
+export default atn;

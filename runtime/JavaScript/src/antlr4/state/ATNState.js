@@ -3,8 +3,6 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const INITIAL_NUM_TRANSITIONS = 4;
-
 /**
  * The following images show the relation of states and
  * {@link ATNState//transitions} for various grammar constructs.
@@ -65,7 +63,8 @@ const INITIAL_NUM_TRANSITIONS = 4;
  *
  * <embed src="images/OptionalNonGreedy.svg" type="image/svg+xml"/>
  */
-class ATNState {
+export default class ATNState {
+
     constructor() {
         // Which ATN are we in?
         this.atn = null;
@@ -76,6 +75,7 @@ class ATNState {
         // Track the transitions emanating from this ATN state.
         this.transitions = [];
         // Used to cache lookahead during parsing, not used during construction
+        // noinspection JSUnusedGlobalSymbols
         this.nextTokenWithinRule = null;
     }
 
@@ -91,6 +91,7 @@ class ATNState {
         }
     }
 
+    // noinspection JSMethodCanBeStatic,JSUnusedGlobalSymbols
     isNonGreedyExitState() {
         return false;
     }
@@ -144,172 +145,3 @@ ATNState.serializationNames = [
 
 ATNState.INVALID_STATE_NUMBER = -1;
 
-
-class BasicState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.BASIC;
-    }
-}
-
-class DecisionState extends ATNState {
-    constructor() {
-        super();
-        this.decision = -1;
-        this.nonGreedy = false;
-        return this;
-    }
-}
-
-/**
- *  The start of a regular {@code (...)} block
- */
-class BlockStartState extends DecisionState {
-    constructor() {
-        super();
-        this.endState = null;
-        return this;
-    }
-}
-
-class BasicBlockStartState extends BlockStartState {
-    constructor() {
-        super();
-        this.stateType = ATNState.BLOCK_START;
-        return this;
-    }
-}
-
-/**
- * Terminal node of a simple {@code (a|b|c)} block
- */
-class BlockEndState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.BLOCK_END;
-        this.startState = null;
-        return this;
-    }
-}
-
-/**
- * The last node in the ATN for a rule, unless that rule is the start symbol.
- * In that case, there is one transition to EOF. Later, we might encode
- * references to all calls to this rule to compute FOLLOW sets for
- * error handling
- */
-class RuleStopState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.RULE_STOP;
-        return this;
-    }
-}
-
-class RuleStartState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.RULE_START;
-        this.stopState = null;
-        this.isPrecedenceRule = false;
-        return this;
-    }
-}
-
-/**
- * Decision state for {@code A+} and {@code (A|B)+}.  It has two transitions:
- * one to the loop back to start of the block and one to exit.
- */
-class PlusLoopbackState extends DecisionState {
-    constructor() {
-        super();
-        this.stateType = ATNState.PLUS_LOOP_BACK;
-        return this;
-    }
-}
-
-/**
- * Start of {@code (A|B|...)+} loop. Technically a decision state, but
- * we don't use for code generation; somebody might need it, so I'm defining
- * it for completeness. In reality, the {@link PlusLoopbackState} node is the
- * real decision-making note for {@code A+}
- */
-class PlusBlockStartState extends BlockStartState {
-    constructor() {
-        super();
-        this.stateType = ATNState.PLUS_BLOCK_START;
-        this.loopBackState = null;
-        return this;
-    }
-}
-
-/**
- * The block that begins a closure loop
- */
-class StarBlockStartState extends BlockStartState {
-    constructor() {
-        super();
-        this.stateType = ATNState.STAR_BLOCK_START;
-        return this;
-    }
-}
-
-class StarLoopbackState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.STAR_LOOP_BACK;
-        return this;
-    }
-}
-
-class StarLoopEntryState extends DecisionState {
-    constructor() {
-        super();
-        this.stateType = ATNState.STAR_LOOP_ENTRY;
-        this.loopBackState = null;
-        // Indicates whether this state can benefit from a precedence DFA during SLL decision making.
-        this.isPrecedenceDecision = null;
-        return this;
-    }
-}
-
-/**
- * Mark the end of a * or + loop
- */
-class LoopEndState extends ATNState {
-    constructor() {
-        super();
-        this.stateType = ATNState.LOOP_END;
-        this.loopBackState = null;
-        return this;
-    }
-}
-
-/**
- * The Tokens rule start state linking to each lexer rule start state
- */
-class TokensStartState extends DecisionState {
-    constructor() {
-        super();
-        this.stateType = ATNState.TOKEN_START;
-        return this;
-    }
-}
-
-module.exports = {
-    ATNState,
-    BasicState,
-    DecisionState,
-    BlockStartState,
-    BlockEndState,
-    LoopEndState,
-    RuleStartState,
-    RuleStopState,
-    TokensStartState,
-    PlusLoopbackState,
-    StarLoopbackState,
-    StarLoopEntryState,
-    PlusBlockStartState,
-    StarBlockStartState,
-    BasicBlockStartState
-}

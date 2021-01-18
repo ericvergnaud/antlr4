@@ -3,19 +3,24 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Set, BitSet} = require('./Utils');
-const {Token} = require('./Token');
-const {ATNConfig} = require('./atn/ATNConfig');
-const {IntervalSet} = require('./IntervalSet');
-const {RuleStopState} = require('./atn/ATNState');
-const {RuleTransition, NotSetTransition, WildcardTransition, AbstractPredicateTransition} = require('./atn/Transition');
-const {predictionContextFromRuleContext, PredictionContext, SingletonPredictionContext} = require('./PredictionContext');
+import {BitSet, Set} from "../Utils";
+import IntervalSet from "../IntervalSet";
+import ATNConfig from "./ATNConfig";
+import RuleStopState from "../state/RuleStopState";
+import NotSetTransition from "../transition/NotSetTransition";
+import WildcardTransition from "../transition/WildcardTransition";
+import AbstractPredicateTransition from "../transition/AbstractPredicateTransition";
+import SingletonPredictionContext from "../context/SingletonPredictionContext";
+import {predictionContextFromRuleContext} from "../context/ContextUtils";
+import RuleTransition from "../transition/RuleTransition";
 
-class LL1Analyzer {
+
+export default class LL1Analyzer {
     constructor(atn) {
         this.atn = atn;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Calculates the SLL(1) expected lookahead set for each outgoing transition
      * of an {@link ATNState}. The returned array has one element for each
@@ -24,7 +29,7 @@ class LL1Analyzer {
      * element at index <em>i</em> of the result will be {@code null}.
      *
      * @param s the ATN state
-     * @return the expected symbols for each outgoing transition of {@code s}.
+     * @return Array the expected symbols for each outgoing transition of {@code s}.
      */
     getDecisionLookahead(s) {
         if (s === null) {
@@ -36,7 +41,7 @@ class LL1Analyzer {
             look[alt] = new IntervalSet();
             const lookBusy = new Set();
             const seeThruPreds = false; // fail to get lookahead upon pred
-            this._LOOK(s.transition(alt).target, null, PredictionContext.EMPTY,
+            this._LOOK(s.transitions[alt].target, null, PredictionContext.EMPTY,
                   look[alt], lookBusy, new BitSet(), seeThruPreds, false);
             // Wipe out lookahead for this alternative if we found nothing
             // or we had a predicate when we !seeThruPreds
@@ -62,7 +67,7 @@ class LL1Analyzer {
      * @param ctx the complete parser context, or {@code null} if the context
      * should be ignored
      *
-     * @return The set of tokens that can follow {@code s} in the ATN in the
+     * @return IntervalSet The set of tokens that can follow {@code s} in the ATN in the
      * specified {@code ctx}.
      */
     LOOK(s, stopState, ctx) {
@@ -186,5 +191,4 @@ class LL1Analyzer {
  */
 LL1Analyzer.HIT_PRED = Token.INVALID_TYPE;
 
-module.exports = LL1Analyzer;
 

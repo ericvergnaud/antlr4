@@ -3,9 +3,9 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const InputStream = require('./InputStream');
-const fs = require("fs");
-
+import InputStream from "./InputStream";
+import fs from "fs";
+// noinspection JSUnusedGlobalSymbols
 /**
  * Utility functions to create InputStreams from various sources.
  *
@@ -30,6 +30,7 @@ const CharStreams = {
   fromBlob: function(blob, encoding, onLoad, onError) {
     const reader = new window.FileReader();
     reader.onload = function(e) {
+      // noinspection JSUnresolvedVariable
       const is = new InputStream(e.target.result, true);
       onLoad(is);
     };
@@ -53,6 +54,7 @@ const CharStreams = {
    * Invokes callback(error, result) on completion.
    */
   fromPath: function(path, encoding, callback) {
+    // noinspection JSUnresolvedFunction
     fs.readFile(path, encoding, function(err, data) {
       let is = null;
       if (data !== null) {
@@ -68,9 +70,10 @@ const CharStreams = {
    * 'utf8' if encoding is null).
    */
   fromPathSync: function(path, encoding) {
+    // noinspection JSUnresolvedFunction
     const data = fs.readFileSync(path, encoding);
     return new InputStream(data, true);
   }
 };
 
-module.exports = CharStreams
+export default CharStreams;

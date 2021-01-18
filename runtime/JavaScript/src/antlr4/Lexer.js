@@ -3,20 +3,20 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-const Recognizer = require('./Recognizer');
-const CommonTokenFactory = require('./CommonTokenFactory');
-const {RecognitionException} = require('./error/Errors');
-const {LexerNoViableAltException} = require('./error/Errors');
+import RecognitionException from "./error/RecognitionException";
+import CommonTokenFactory from "./CommonTokenFactory";
+import Recognizer from "./Recognizer";
+import Token from "./Token";
+import LexerNoViableAltException from "./error/LexerNoViableAltException";
 
-class TokenSource {}
 
 /**
  * A lexer is recognizer that draws input symbols from a character stream.
  * lexer grammars result in a subclass of this object. A Lexer object
  * uses simplified match() and error recovery mechanisms in the interest of speed.
  */
-class Lexer extends Recognizer {
+export default class Lexer extends Recognizer {
+
 	constructor(input) {
 		super();
 		this._input = input;
@@ -235,6 +235,7 @@ class Lexer extends Recognizer {
 		return this._input.index;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Return a list of all Token objects in input char stream.
 	 * Forces load of all tokens. Does not include EOF token.
@@ -259,6 +260,7 @@ class Lexer extends Recognizer {
 				this._tokenStartColumn, msg, e);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	getErrorDisplay(s) {
 		const d = [];
 		for (let i = 0; i < s.length; i++) {
@@ -267,6 +269,7 @@ class Lexer extends Recognizer {
 		return d.join('');
 	}
 
+	// noinspection JSMethodCanBeStatic
 	getErrorDisplayForChar(c) {
 		if (c.charCodeAt(0) === Token.EOF) {
 			return "<EOF>";
@@ -281,6 +284,7 @@ class Lexer extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getCharErrorDisplay(c) {
 		return "'" + this.getErrorDisplayForChar(c) + "'";
 	}
@@ -303,10 +307,12 @@ class Lexer extends Recognizer {
 		}
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	get inputStream(){
 		return this._input;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	set inputStream(input) {
 		this._input = null;
 		this._tokenFactorySourcePair = [ this, this._input ];
@@ -320,7 +326,7 @@ class Lexer extends Recognizer {
 	}
 
 	get type(){
-		return this.type;
+		return this._type;
 	}
 
 	set type(type) {
@@ -370,5 +376,3 @@ Lexer.MAX_CHAR_VALUE = 0x10FFFF;
 
 // Set the char stream and reset the lexer
 
-
-module.exports = Lexer;

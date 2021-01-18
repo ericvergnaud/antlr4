@@ -3,9 +3,9 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {BitSet} = require('./../Utils');
-const {ErrorListener} = require('./ErrorListener')
-const {Interval} = require('./../IntervalSet')
+import {BitSet} from "./../Utils";
+import ErrorListener from "./ErrorListener";
+import Interval from "./../Interval";
 
 
 /**
@@ -27,7 +27,7 @@ const {Interval} = require('./../IntervalSet')
  *  this situation occurs.</li>
  *  </ul>
  */
-class DiagnosticErrorListener extends ErrorListener {
+export default class DiagnosticErrorListener extends ErrorListener {
 	constructor(exactOnly) {
 		super();
 		exactOnly = exactOnly || true;
@@ -39,46 +39,52 @@ class DiagnosticErrorListener extends ErrorListener {
 		if (this.exactOnly && !exact) {
 			return;
 		}
+		// noinspection JSUnresolvedFunction
 		const msg = "reportAmbiguity d=" +
 			this.getDecisionDescription(recognizer, dfa) +
 			": ambigAlts=" +
 			this.getConflictingAlts(ambigAlts, configs) +
 			", input='" +
-			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'"
+			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'";
 		recognizer.notifyErrorListeners(msg);
 	}
 
 	reportAttemptingFullContext(recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs) {
+		// noinspection JSUnresolvedFunction
 		const msg = "reportAttemptingFullContext d=" +
 			this.getDecisionDescription(recognizer, dfa) +
 			", input='" +
-			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'"
+			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'";
 		recognizer.notifyErrorListeners(msg);
 	}
 
 	reportContextSensitivity(recognizer, dfa, startIndex, stopIndex, prediction, configs) {
+		// noinspection JSUnresolvedFunction
 		const msg = "reportContextSensitivity d=" +
 			this.getDecisionDescription(recognizer, dfa) +
 			", input='" +
-			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'"
+			recognizer.getTokenStream().getText(new Interval(startIndex, stopIndex)) + "'";
 		recognizer.notifyErrorListeners(msg);
 	}
 
+	// noinspection JSMethodCanBeStatic
 	getDecisionDescription(recognizer, dfa) {
-		const decision = dfa.decision
-		const ruleIndex = dfa.atnStartState.ruleIndex
+		const decision = dfa.decision;
+		const ruleIndex = dfa.atnStartState.ruleIndex;
 
-		const ruleNames = recognizer.ruleNames
+		// noinspection JSUnresolvedVariable
+		const ruleNames = recognizer.ruleNames;
 		if (ruleIndex < 0 || ruleIndex >= ruleNames.length) {
 			return "" + decision;
 		}
-		const ruleName = ruleNames[ruleIndex] || null
+		const ruleName = ruleNames[ruleIndex] || null;
 		if (ruleName === null || ruleName.length === 0) {
 			return "" + decision;
 		}
 		return `${decision} (${ruleName})`;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * Computes the set of conflicting or ambiguous alternatives from a
 	 * configuration set, if that information was not already provided by the
@@ -87,19 +93,18 @@ class DiagnosticErrorListener extends ErrorListener {
 	 * @param reportedAlts The set of conflicting or ambiguous alternatives, as
 	 * reported by the parser.
 	 * @param configs The conflicting or ambiguous configuration set.
-	 * @return Returns {@code reportedAlts} if it is not {@code null}, otherwise
+	 * @return String Returns {@code reportedAlts} if it is not {@code null}, otherwise
 	 * returns the set of alternatives represented in {@code configs}.
      */
 	getConflictingAlts(reportedAlts, configs) {
 		if (reportedAlts !== null) {
 			return reportedAlts;
 		}
-		const result = new BitSet()
+		const result = new BitSet();
 		for (let i = 0; i < configs.items.length; i++) {
 			result.add(configs.items[i].alt);
 		}
-		return `{${result.values().join(", ")}}`;
+		return result.values().join(", ");
 	}
 }
 
-module.exports = DiagnosticErrorListener

@@ -3,14 +3,16 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Set} = require("../Utils");
-const {DFAState} = require('./DFAState');
-const {StarLoopEntryState} = require('../atn/ATNState');
-const {ATNConfigSet} = require('./../atn/ATNConfigSet');
-const {DFASerializer} = require('./DFASerializer');
-const {LexerDFASerializer} = require('./DFASerializer');
 
-class DFA {
+
+import StarLoopEntryState from "../state/StarLoopEntryState";
+import ATNConfigSet from "../atn/ATNConfigSet";
+import DFASerializer from "./DFASerializer";
+import LexerDFASerializer from "./LexerDFASerializer";
+import DFAState from "./DFAState";
+
+export default class DFA {
+
 	constructor(atnStartState, decision) {
 		if (decision === undefined) {
 			decision = 0;
@@ -110,8 +112,8 @@ class DFA {
 	 * {@code false}
 	 */
 	setPrecedenceDfa(precedenceDfa) {
-		if (this.precedenceDfa!==precedenceDfa) {
-			this._states = new DFAStatesSet();
+		if (this.precedenceDfa !== precedenceDfa) {
+			this._states = new Set();
 			if (precedenceDfa) {
 				const precedenceState = new DFAState(null, new ATNConfigSet());
 				precedenceState.edges = [];
@@ -123,16 +125,6 @@ class DFA {
 			}
 			this.precedenceDfa = precedenceDfa;
 		}
-	}
-
-	/**
-	 * Return a list of all states in this DFA, ordered by state number.
-	 */
-	sortedStates() {
-		const list = this._states.values();
-		return list.sort(function(a, b) {
-			return a.stateNumber - b.stateNumber;
-		});
 	}
 
 	toString(literalNames, symbolicNames) {
@@ -158,5 +150,3 @@ class DFA {
 	}
 }
 
-
-module.exports = DFA;

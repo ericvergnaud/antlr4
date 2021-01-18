@@ -3,19 +3,20 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const InputStream = require('./InputStream');
-const fs = require("fs");
+import InputStream from "./InputStream";
+import fs from "fs";
 
 /**
  * This is an InputStream that is loaded from a file all at once
  * when you construct the object.
  */
-class FileStream extends InputStream {
+export default class FileStream extends InputStream {
 	constructor(fileName, decodeToUnicodeCodePoints) {
+		// noinspection JSUnresolvedFunction
 		const data = fs.readFileSync(fileName, "utf8");
 		super(data, decodeToUnicodeCodePoints);
+		// noinspection JSUnusedGlobalSymbols
 		this.fileName = fileName;
 	}
 }
 
-module.exports = FileStream

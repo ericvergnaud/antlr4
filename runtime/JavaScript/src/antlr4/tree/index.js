@@ -3,6 +3,22 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const Tree = require('./Tree');
-const Trees = require('./Trees');
-module.exports = {...Tree, Trees}
+import * as TreeUtils from "./TreeUtils";
+import RuleNode from "./RuleNode";
+import ErrorNode from "./ErrorNode";
+import TerminalNode from "./TerminalNode";
+import ParseTreeListener from "./ParseTreeListener";
+import ParseTreeVisitor from "./ParseTreeVisitor";
+import ParseTreeWalker from "./ParseTreeWalker";
+
+const tree = { ...TreeUtils, RuleNode,
+    ErrorNode,
+    ErrorNodeImpl : ErrorNode,
+    TerminalNode,
+    TerminalNodeImpl: TerminalNode,
+    ParseTreeListener,
+    ParseTreeVisitor,
+    ParseTreeWalker,
+};
+
+export default tree;

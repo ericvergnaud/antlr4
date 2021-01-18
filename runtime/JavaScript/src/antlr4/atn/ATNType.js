@@ -6,8 +6,9 @@
 /**
  * Represents the type of recognizer an ATN applies to
  */
-module.exports = {
+const types = {
     LEXER: 0,
     PARSER: 1
 };
 
+export default types;

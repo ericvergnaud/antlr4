@@ -1,14 +1,12 @@
-const path = require('path')
+const path = require('path');
 
 module.exports = {
     mode: "production",
     entry: './src/antlr4/index.js',
     output: {
+        globalObject: 'this',
         filename: 'antlr4.js',
-        path: path.resolve(__dirname, 'dist'),
-        // the name of the exported antlr4
-        library: "antlr4",
-        libraryTarget: 'window'
+        path: path.resolve(__dirname, 'dist')
     },
     node: {
         module: "empty",
@@ -24,5 +22,6 @@ module.exports = {
                 loader: 'babel-loader',
             }
         }]
-    }
-}
+    },
+    devtool: "source-map"
+};

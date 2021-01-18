@@ -3,10 +3,6 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-function arrayToString(a) {
-    return "[" + a.join(", ") + "]";
-}
-
 String.prototype.seed = String.prototype.seed || Math.round(Math.random() * Math.pow(2, 32));
 
 String.prototype.hashCode = function () {
@@ -43,8 +39,10 @@ String.prototype.hashCode = function () {
     switch (remainder) {
         case 3:
             k1 ^= (key.charCodeAt(i + 2) & 0xff) << 16;
+            // falls through
         case 2:
             k1 ^= (key.charCodeAt(i + 1) & 0xff) << 8;
+            // falls through
         case 1:
             k1 ^= (key.charCodeAt(i) & 0xff);
 
@@ -65,15 +63,20 @@ String.prototype.hashCode = function () {
     return h1 >>> 0;
 };
 
-function standardEqualsFunction(a, b) {
-    return a ? a.equals(b) : a==b;
+export function arrayToString(a) {
+    return "[" + a.join(", ") + "]";
 }
 
-function standardHashCodeFunction(a) {
+
+export function standardEqualsFunction(a, b) {
+    return a ? a.equals(b) : a === b;
+}
+
+export function standardHashCodeFunction(a) {
     return a ? a.hashCode() : -1;
 }
 
-class Set {
+export class Set {
     constructor(hashFunction, equalsFunction) {
         this.data = {};
         this.hashFunction = hashFunction || standardHashCodeFunction;
@@ -104,9 +107,9 @@ class Set {
 
     get(value) {
         const hash = this.hashFunction(value);
-        const key = "hash_" + hash;
-        if (key in this.data) {
-            const values = this.data[key];
+        const hashKey = "hash_" + hash;
+        if (hashKey in this.data) {
+            const values = this.data[hashKey];
             for (let i = 0; i < values.length; i++) {
                 if (this.equalsFunction(value, values[i])) {
                     return values[i];
@@ -118,9 +121,9 @@ class Set {
 
     values() {
         let l = [];
-        for (const key in this.data) {
-            if (key.indexOf("hash_") === 0) {
-                l = l.concat(this.data[key]);
+        for (const hashKey of Object.keys(this.data)) {
+            if (hashKey.indexOf("hash_") === 0) {
+                l = l.concat(this.data[hashKey]);
             }
         }
         return l;
@@ -132,9 +135,9 @@ class Set {
 
     get length(){
         let l = 0;
-        for (const key in this.data) {
-            if (key.indexOf("hash_") === 0) {
-                l = l + this.data[key].length;
+        for (const hashKey of Object.keys(this.data)) {
+            if (hashKey.indexOf("hash_") === 0) {
+                l = l + this.data[hashKey].length;
             }
         }
         return l;
@@ -142,7 +145,7 @@ class Set {
 }
 
 
-class BitSet {
+export class BitSet {
     constructor() {
         this.data = [];
     }
@@ -197,7 +200,7 @@ class BitSet {
 }
 
 
-class Map {
+export class Map {
     constructor(hashFunction, equalsFunction) {
         this.data = {};
         this.hashFunction = hashFunction || standardHashCodeFunction;
@@ -252,14 +255,15 @@ class Map {
 
     entries() {
         let l = [];
-        for (const key in this.data) {
-            if (key.indexOf("hash_") === 0) {
-                l = l.concat(this.data[key]);
+        for (const hashKey of Object.keys(this.data)) {
+            if (hashKey.indexOf("hash_") === 0) {
+                l = l.concat(this.data[hashKey]);
             }
         }
         return l;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     getKeys() {
         return this.entries().map(function(e) {
             return e.key;
@@ -281,7 +285,7 @@ class Map {
 
     get length(){
         let l = 0;
-        for (const hashKey in this.data) {
+        for (const hashKey of Object.keys(this.data)) {
             if (hashKey.indexOf("hash_") === 0) {
                 l = l + this.data[hashKey].length;
             }
@@ -291,7 +295,7 @@ class Map {
 }
 
 
-class AltDict {
+export class AltDict {
     constructor() {
         this.data = {};
     }
@@ -320,7 +324,7 @@ class AltDict {
 }
 
 
-class DoubleDict {
+export class DoubleDict {
     constructor(defaultMapCtor) {
         this.defaultMapCtor = defaultMapCtor || Map;
         this.cacheMap = new this.defaultMapCtor();
@@ -341,7 +345,8 @@ class DoubleDict {
     }
 }
 
-class Hash {
+export class Hash {
+
     constructor() {
         this.count = 0;
         this.hash = 0;
@@ -371,7 +376,7 @@ class Hash {
                         if(value.updateHashCode)
                             value.updateHashCode(this);
                         else
-                            console.log("No updateHashCode for " + value.toString())
+                            console.log("No updateHashCode for " + value.toString());
                         continue;
                 }
                 k = k * 0xCC9E2D51;
@@ -397,14 +402,14 @@ class Hash {
     }
 }
 
-function hashStuff() {
+export function hashStuff() {
     const hash = new Hash();
     hash.update.apply(hash, arguments);
     return hash.finish();
 }
 
 
-function escapeWhitespace(s, escapeSpaces) {
+export function escapeWhitespace(s, escapeSpaces) {
     s = s.replace(/\t/g, "\\t")
          .replace(/\n/g, "\\n")
          .replace(/\r/g, "\\r");
@@ -414,21 +419,21 @@ function escapeWhitespace(s, escapeSpaces) {
     return s;
 }
 
-function titleCase(str) {
+export function titleCase(str) {
     return str.replace(/\w\S*/g, function (txt) {
         return txt.charAt(0).toUpperCase() + txt.substr(1);
     });
 }
 
-function equalArrays(a, b) {
+export function equalArrays(a, b) {
     if (!Array.isArray(a) || !Array.isArray(b))
         return false;
-    if (a == b)
+    if (a === b)
         return true;
-    if (a.length != b.length)
+    if (a.length !== b.length)
         return false;
     for (let i = 0; i < a.length; i++) {
-        if (a[i] == b[i])
+        if (a[i] === b[i])
             continue;
         if (!a[i].equals || !a[i].equals(b[i]))
             return false;
@@ -436,16 +441,3 @@ function equalArrays(a, b) {
     return true;
 }
 
-module.exports = {
-    Hash,
-    Set,
-    Map,
-    BitSet,
-    AltDict,
-    DoubleDict,
-    hashStuff,
-    escapeWhitespace,
-    arrayToString,
-    titleCase,
-    equalArrays
-}

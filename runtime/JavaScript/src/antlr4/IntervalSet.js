@@ -3,40 +3,19 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-
-/* stop is not included! */
-class Interval {
-	constructor(start, stop) {
-		this.start = start;
-		this.stop = stop;
-	}
-
-	contains(item) {
-		return item >= this.start && item < this.stop;
-	}
-
-	toString() {
-		if(this.start===this.stop-1) {
-			return this.start.toString();
-		} else {
-			return this.start.toString() + ".." + (this.stop-1).toString();
-		}
-	}
-
-	get length(){
-		return this.stop - this.start;
-	}
-}
+import Interval from "./Interval";
+import Token from "./Token";
 
 
-class IntervalSet {
+export default class IntervalSet {
+
 	constructor() {
 		this.intervals = null;
+		// noinspection JSUnusedGlobalSymbols
 		this.readOnly = false;
 	}
 
-	first(v) {
+	first() {
 		if (this.intervals === null || this.intervals.length===0) {
 			return Token.INVALID_TYPE;
 		} else {
@@ -94,16 +73,17 @@ class IntervalSet {
 
 	reduce(k) {
 		// only need to reduce if k is not the last
+		// noinspection JSUnresolvedVariable
 		if (k < this.intervalslength - 1) {
 			const l = this.intervals[k];
 			const r = this.intervals[k + 1];
 			// if r contained in l
 			if (l.stop >= r.stop) {
-				this.intervals.pop(k + 1);
+				this.intervals = this.intervals.splice(k + 1, 1);
 				this.reduce(k);
 			} else if (l.stop >= r.start) {
 				this.intervals[k] = new Interval(l.start, r.stop);
-				this.intervals.pop(k + 1);
+				this.intervals = this.intervals.splice(k + 1, 1);
 			}
 		}
 	}
@@ -272,6 +252,7 @@ class IntervalSet {
 		}
 	}
 
+	// noinspection JSMethodCanBeStatic
 	elementName(literalNames, symbolicNames, a) {
 		if (a === Token.EOF) {
 			return "<EOF>";
@@ -289,7 +270,3 @@ class IntervalSet {
 	}
 }
 
-module.exports = {
-	Interval,
-	IntervalSet
-};

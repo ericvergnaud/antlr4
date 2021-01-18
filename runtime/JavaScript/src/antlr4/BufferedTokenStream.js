@@ -3,12 +3,11 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {Token} = require('./Token');
-const Lexer = require('./Lexer');
-const {Interval} = require('./IntervalSet');
+import Token from "./Token";
+import Lexer from "./Lexer";
+import Interval from "./Interval";
+import TokenStream from "./TokenStream";
 
-// this is just to keep meaningful parameter types to Parser
-class TokenStream {}
 
 /**
  * This implementation of {@link TokenStream} loads tokens from a
@@ -22,7 +21,8 @@ class TokenStream {}
  * {@link Token//HIDDEN_CHANNEL}, use a filtering token stream such a
  * {@link CommonTokenStream}.</p>
  */
-class BufferedTokenStream extends TokenStream {
+export default class BufferedTokenStream extends TokenStream {
+
 	constructor(tokenSource) {
 
 		super();
@@ -68,6 +68,7 @@ class BufferedTokenStream extends TokenStream {
 		this.fetchedEOF = false;
 	}
 
+	// noinspection JSMethodCanBeStatic
 	mark() {
 		return 0;
 	}
@@ -203,6 +204,7 @@ class BufferedTokenStream extends TokenStream {
 		return this.tokens[i];
 	}
 
+	// noinspection JSMethodCanBeStatic
 	/**
 	 * Allowed derived classes to modify the behavior of operations which change
 	 * the current stream position by adjusting the target token index of a seek
@@ -251,7 +253,7 @@ class BufferedTokenStream extends TokenStream {
 			return -1;
 		}
 		let token = this.tokens[i];
-		while (token.channel !== this.channel) {
+		while (token.channel !== channel) {
 			if (token.type === Token.EOF) {
 				return -1;
 			}
@@ -274,16 +276,14 @@ class BufferedTokenStream extends TokenStream {
 		return i;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Collect all tokens on specified channel to the right of
 	 * the current token up until we see a token on DEFAULT_TOKEN_CHANNEL or
 	 * EOF. If channel is -1, find any non default channel token.
 	 */
-	getHiddenTokensToRight(tokenIndex,
-			channel) {
-		if (channel === undefined) {
-			channel = -1;
-		}
+	getHiddenTokensToRight(tokenIndex, channel) {
+		channel = channel || -1;
 		this.lazyInit();
 		if (tokenIndex < 0 || tokenIndex >= this.tokens.length) {
 			throw "" + tokenIndex + " not in 0.." + this.tokens.length - 1;
@@ -295,16 +295,14 @@ class BufferedTokenStream extends TokenStream {
 		return this.filterForChannel(from_, to, channel);
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	/**
 	 * Collect all tokens on specified channel to the left of
 	 * the current token up until we see a token on DEFAULT_TOKEN_CHANNEL.
 	 * If channel is -1, find any non default channel token.
 	 */
-	getHiddenTokensToLeft(tokenIndex,
-			channel) {
-		if (channel === undefined) {
-			channel = -1;
-		}
+	getHiddenTokensToLeft(tokenIndex, channel) {
+		channel =  channel || -1;
 		this.lazyInit();
 		if (tokenIndex < 0 || tokenIndex >= this.tokens.length) {
 			throw "" + tokenIndex + " not in 0.." + this.tokens.length - 1;
@@ -337,11 +335,12 @@ class BufferedTokenStream extends TokenStream {
 		return hidden;
 	}
 
+	// noinspection JSUnusedGlobalSymbols
 	getSourceName() {
 		return this.tokenSource.getSourceName();
 	}
 
-// Get the text of all tokens in this buffer.///
+	// Get the text of all tokens in this buffer.
 	getText(interval) {
 		this.lazyInit();
 		this.fill();
@@ -373,14 +372,11 @@ class BufferedTokenStream extends TokenStream {
 		return s;
 	}
 
-// Get all tokens from lexer until EOF///
+	// Get all tokens from lexer until EOF
 	fill() {
 		this.lazyInit();
-		while (this.fetch(1000) === 1000) {
-			continue;
-		}
+		while (this.fetch(1000) === 1000) {}
 	}
 }
 
 
-module.exports = BufferedTokenStream;

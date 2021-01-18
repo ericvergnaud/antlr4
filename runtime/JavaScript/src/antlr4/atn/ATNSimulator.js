@@ -3,12 +3,13 @@
  * can be found in the LICENSE.txt file in the project root.
  */
 
-const {DFAState} = require('./../dfa/DFAState');
-const {ATNConfigSet} = require('./ATNConfigSet');
-const {getCachedPredictionContext} = require('./../PredictionContext');
-const {Map} = require('./../Utils');
+import DFAState from "./../dfa/DFAState";
+import ATNConfigSet from "./ATNConfigSet";
+import {Map} from "./../Utils";
+import {getCachedPredictionContext} from "../context/ContextUtils";
 
-class ATNSimulator {
+
+export default class ATNSimulator {
     constructor(atn, sharedContextCache) {
         /**
          * The context cache maps all PredictionContext objects that are ==
@@ -48,5 +49,3 @@ class ATNSimulator {
 // Must distinguish between missing edge and edge we know leads nowhere///
 ATNSimulator.ERROR = new DFAState(0x7FFFFFFF, new ATNConfigSet());
 
-
-module.exports = ATNSimulator;
