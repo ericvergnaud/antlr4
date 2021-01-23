@@ -1,4 +1,5 @@
 import RecognitionException from "./RecognitionException";
+import Interval from "../Interval";
 
 export default class LexerNoViableAltException extends RecognitionException {
 
@@ -12,7 +13,7 @@ export default class LexerNoViableAltException extends RecognitionException {
     toString() {
         let symbol = "";
         if (this.startIndex >= 0 && this.startIndex < this.input.size) {
-            symbol = this.input.getText({start: this.startIndex, stop: this.startIndex});
+            symbol = this.input.getText(new Interval(this.startIndex, this.startIndex));
         }
         return "LexerNoViableAltException" + symbol;
     }

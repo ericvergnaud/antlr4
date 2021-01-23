@@ -6,44 +6,19 @@
 package org.antlr.v4.test.runtime.javascript;
 
 import org.antlr.v4.Tool;
-import org.antlr.v4.automata.ATNFactory;
-import org.antlr.v4.automata.ATNPrinter;
 import org.antlr.v4.automata.LexerATNFactory;
 import org.antlr.v4.automata.ParserATNFactory;
-import org.antlr.v4.codegen.CodeGenerator;
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CommonToken;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.IntStream;
-import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenSource;
-import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.WritableToken;
 import org.antlr.v4.runtime.atn.ATN;
 import org.antlr.v4.runtime.atn.ATNDeserializer;
 import org.antlr.v4.runtime.atn.ATNSerializer;
-import org.antlr.v4.runtime.atn.ATNState;
-import org.antlr.v4.runtime.atn.LexerATNSimulator;
-import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.misc.IntegerList;
-import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.semantics.SemanticPipeline;
 import org.antlr.v4.test.runtime.ErrorQueue;
 import org.antlr.v4.test.runtime.RuntimeTestSupport;
 import org.antlr.v4.test.runtime.StreamVacuum;
 import org.antlr.v4.test.runtime.TestContext;
-import org.antlr.v4.tool.ANTLRMessage;
-import org.antlr.v4.tool.DOTGenerator;
 import org.antlr.v4.tool.Grammar;
-import org.antlr.v4.tool.GrammarSemanticsMessage;
 import org.antlr.v4.tool.LexerGrammar;
-import org.antlr.v4.tool.Rule;
 import org.stringtemplate.v4.ST;
-import org.stringtemplate.v4.STGroup;
-import org.stringtemplate.v4.STGroupString;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,16 +31,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.TimeUnit;
 
 import static org.antlr.v4.test.runtime.BaseRuntimeTest.antlrOnString;
 import static org.antlr.v4.test.runtime.BaseRuntimeTest.writeFile;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class BaseNodeTest implements RuntimeTestSupport {
 	// -J-Dorg.antlr.v4.test.BaseTest.level=FINE
@@ -185,12 +154,22 @@ public class BaseNodeTest implements RuntimeTestSupport {
 		assertTrue(success);
 		writeFile(tmpdir, "input", input);
 		writeLexerTestFile(lexerName, showDFA);
-		writeFile(tmpdir, "package.json", "{\"type\": \"module\"}");
+		writePackageFile(tmpdir);
 		String output = execModule("Test.js");
 		if ( output!=null && output.length()==0 ) {
 			output = null;
 		}
 		return output;
+	}
+
+	private void writePackageFile(String tmpdir) {
+		String json = "{\n" +
+				"  \"type\": \"module\",\n" +
+				"  \"dependencies\": {\n" +
+				"    \"antlr4\": \"^4.9\"\n" +
+				"  }\n" +
+				"}";
+		writeFile(tmpdir, "package.json", json);
 	}
 
 	@Override
@@ -205,7 +184,7 @@ public class BaseNodeTest implements RuntimeTestSupport {
 		writeFile(tmpdir, "input", input);
 		rawBuildRecognizerTestFile(parserName, lexerName, listenerName,
 		                           visitorName, startRuleName, showDiagnosticErrors);
-		writeFile(tmpdir, "package.json", "{\"type\": \"module\"}");
+		writePackageFile(tmpdir);
 		return execRecognizer();
 	}
 
@@ -279,7 +258,7 @@ public class BaseNodeTest implements RuntimeTestSupport {
 			String nodejsPath = locateNodeJS();
 			String inputPath = new File(new File(tmpdir), "input")
 					.getAbsolutePath();
-			ProcessBuilder builder = new ProcessBuilder(nodejsPath, modulePath,
+			ProcessBuilder builder = new ProcessBuilder(nodejsPath, "--experimental-modules", modulePath,
 					inputPath);
 			builder.environment().put("NODE_PATH", tmpdir);
 			builder.directory(new File(tmpdir));
@@ -345,7 +324,7 @@ public class BaseNodeTest implements RuntimeTestSupport {
 	}
 
 	private void linkRuntime(String npmPath) throws IOException, InterruptedException {
-		ProcessBuilder builder = new ProcessBuilder(npmPath, "link", "antlr4");
+		ProcessBuilder builder = new ProcessBuilder(npmPath, "install");
 		builder.directory(new File(tmpdir));
 		builder.redirectError(new File(tmpdir, "error.txt"));
 		builder.redirectOutput(new File(tmpdir, "output.txt"));
