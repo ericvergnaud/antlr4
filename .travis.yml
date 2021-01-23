@@ -200,7 +200,7 @@ matrix:
       env: TARGET=javascript
       stage: main-test
       before_install:
-        - nvm install 14 # otherwise it runs by default on node 8
+        - nvm install 15 # otherwise it runs by default on node 8
         - f="./.travis/before-install-linux-javascript.sh"; ! [ -x "$f" ] || "$f"
     - os: linux
       dist: trusty
