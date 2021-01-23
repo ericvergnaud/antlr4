@@ -32,6 +32,8 @@ export default class DefaultErrorStrategy extends ErrorStrategy {
          */
         this.lastErrorIndex = -1;
         this.lastErrorStates = null;
+        this.nextTokensContext = null;
+        this.nextTokenState = 0;
     }
 
     /**
@@ -95,17 +97,17 @@ export default class DefaultErrorStrategy extends ErrorStrategy {
      * </ul>
      */
     reportError(recognizer, e) {
-        // if we've already reported an error and have not matched a token
-        // yet successfully, don't report any errors.
-        if (this.inErrorRecoveryMode(recognizer)) {
+       // if we've already reported an error and have not matched a token
+       // yet successfully, don't report any errors.
+        if(this.inErrorRecoveryMode(recognizer)) {
             return; // don't report spurious errors
         }
         this.beginErrorCondition(recognizer);
-        if (e instanceof NoViableAltException) {
+        if ( e instanceof NoViableAltException ) {
             this.reportNoViableAlternative(recognizer, e);
-        } else if (e instanceof InputMismatchException) {
+        } else if ( e instanceof InputMismatchException ) {
             this.reportInputMismatch(recognizer, e);
-        } else if (e instanceof FailedPredicateException) {
+        } else if ( e instanceof FailedPredicateException ) {
             this.reportFailedPredicate(recognizer, e);
         } else {
             console.log("unknown recognition error type: " + e.constructor.name);
@@ -199,7 +201,17 @@ export default class DefaultErrorStrategy extends ErrorStrategy {
         const la = recognizer.getTokenStream().LA(1);
         // try cheaper subset first; might get lucky. seems to shave a wee bit off
         const nextTokens = recognizer.atn.nextTokens(s);
-        if (nextTokens.contains(Token.EPSILON) || nextTokens.contains(la)) {
+        if(nextTokens.contains(la)) {
+            this.nextTokensContext = null;
+            this.nextTokenState = ATNState.INVALID_STATE_NUMBER;
+            return;
+        } else if (nextTokens.contains(Token.EPSILON)) {
+            if(this.nextTokensContext === null) {
+                // It's possible the next token won't match information tracked
+                // by sync is restricted for performance.
+                this.nextTokensContext = recognizer._ctx;
+                this.nextTokensState = recognizer._stateNumber;
+            }
             return;
         }
         switch (s.stateType) {
